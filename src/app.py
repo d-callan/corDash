@@ -9,11 +9,15 @@ app = dash.Dash(__name__)
 # Layout of the app
 app.layout = html.Div(
     children=[
-        html.H1('Correlation Matrix as Network Visualization'),
+        html.Link(
+            rel='stylesheet',
+            href='https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css'  # Replace with the correct path to your Material UI stylesheet
+        ),
+        html.H3('Correlation Matrix as Network Visualization'),
         html.Div(
             children=[
                 # Side panel content here
-                html.Label('Upload Data Table', style={'font-weight': 'bold'}),
+                html.Label('Upload Data Table', style={'font-weight': 'bold', 'color': 'black', 'font-size': '16px'}),
                 dcc.Upload(
                     id='upload-data',
                     children=html.Div([
@@ -33,7 +37,7 @@ app.layout = html.Div(
                     multiple=False
                 ),
                 html.P(),
-                html.Label('Upload Second Data Table (optional)', style={'font-weight': 'bold'}),
+                html.Label('Upload Second Data Table (optional)', style={'font-weight': 'bold', 'color': 'black', 'font-size': '16px'}),
                 dcc.Upload(
                     id='upload-data2',
                     children=html.Div([
@@ -54,7 +58,7 @@ app.layout = html.Div(
                 )
             ],
             style={
-                'width': '20%',  # adjust the width as needed
+                'width': '30%',  # adjust the width as needed
                 'float': 'left',  # float the side panel to the left
                 'padding': '20px'  # add padding for spacing
             }
@@ -66,7 +70,8 @@ app.layout = html.Div(
                     children=[
                         dcc.Tab(label='Network', value='network'),
                         dcc.Tab(label='Table', value='table')
-                    ]
+                    ],
+                    value='network'
                 ),
                 html.Div(id='tab-content')
             ],
