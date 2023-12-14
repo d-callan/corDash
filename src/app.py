@@ -2,6 +2,14 @@ import dash
 from dash import html, dcc
 from dash.dependencies import Input, Output
 import base64
+import pandas as pd
+from scipy.stats import pearsonr, spearmanr
+import networkx as nx
+import logging
+import io
+
+# Set up logging
+logging.basicConfig(filename='app.log', level=logging.INFO)
 
 # Initialize the Dash app
 app = dash.Dash(__name__)
@@ -17,7 +25,7 @@ app.layout = html.Div(
         html.Div(
             children=[
                 # Side panel content here
-                html.Label('Upload Data Table', style={'font-weight': 'bold', 'color': 'black', 'font-size': '16px'}),
+                html.Label('Upload Data Table', style={'fontWeight': 'bold', 'color': 'black', 'fontSize': '16px'}),
                 dcc.Upload(
                     id='upload-data',
                     children=html.Div([
@@ -37,7 +45,7 @@ app.layout = html.Div(
                     multiple=False
                 ),
                 html.P(),
-                html.Label('Upload Second Data Table (optional)', style={'font-weight': 'bold', 'color': 'black', 'font-size': '16px'}),
+                html.Label('Upload Second Data Table (optional)', style={'fontWeight': 'bold', 'color': 'black', 'fontSize': '16px'}),
                 dcc.Upload(
                     id='upload-data2',
                     children=html.Div([
@@ -83,6 +91,51 @@ app.layout = html.Div(
         )
     ]
 )
+
+@app.callback(
+    dash.dependencies.Output('tab-content', 'children'),
+    [dash.dependencies.Input('upload-data', 'contents'), dash.dependencies.Input('tabs', 'value')],
+    [dash.dependencies.State('upload-data', 'filename')]
+)
+def render_tab_content(contents, tab, filename):
+    """
+    Update the output based on the uploaded data.
+
+    Parameters:
+    - contents (str): The contents of the uploaded file.
+    - tab (str): The selected tab.
+    - filename (str): The name of the uploaded file.
+
+    Returns:
+    - children (html.Table): The table displaying the correlations.
+    """
+    # log params
+    #logging.info(f'contents: {contents}')
+    logging.info(f'tab: {tab}')
+    logging.info(f'filename: {filename}')
+
+    if contents is not None:
+        # Read the contents of the uploaded file to a Pandas DataFrame
+        content_type, content_string = contents.split(',')
+        decoded_contents = base64.b64decode(content_string)
+        df = pd.read_table(io.StringIO(decoded_contents.decode('utf-8')))
+        logging.info(f'df: {df}')
+    
+        # Calculate the correlations
+        correlations = df.corr()
+
+        if tab == 'table':
+            # Display the correlations in a table
+            return html.Table([
+                html.Thead(
+                    html.Tr([html.Th(col) for col in correlations.columns])
+                ),
+                html.Tbody([
+                    html.Tr([
+                        html.Td(correlations.iloc[i][col]) for col in correlations.columns
+                    ]) for i in range(len(correlations.columns))
+                ])
+            ])
 
 # Run the app
 if __name__ == '__main__':
